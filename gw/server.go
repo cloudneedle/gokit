@@ -1,4 +1,4 @@
-package web
+package gw
 
 import (
 	"context"
@@ -34,10 +34,21 @@ type RouteContext struct {
 	Safe gin.IRoutes
 }
 
-func (r *RouteContext) Handle(fn func(ctx *Context)) gin.HandlerFunc {
+func (r *RouteContext) Handle(fn func(ctx *Context) any) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := &Context{c}
-		fn(ctx)
+		res := fn(ctx)
+		// 判断是否是自定义响应
+		if customResp, ok := res.(ICustomResp); ok {
+			c.JSON(customResp.Status(), customResp.GetData())
+			return
+		}
+		// 判断是否是错误
+		if err, ok := res.(error); ok {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, res)
 	}
 }
 
@@ -50,6 +61,7 @@ type Server struct {
 	isDebug        bool
 	routes         []IRoute
 	authMiddleware gin.HandlerFunc
+	g              *gin.Engine
 }
 
 // ServerOption Server Option type
@@ -84,31 +96,34 @@ func WithAuthMiddleware(authMiddleware gin.HandlerFunc) ServerOption {
 }
 
 // NewServer 创建一个新的Server,默认debug模式
-func NewServer(opts ...ServerOption) *Server {
+func NewServer(opts ...ServerOption) (*Server, error) {
 	s := &Server{
 		isDebug: true,
 	}
 	for _, opt := range opts {
 		opt(s)
 	}
-	return s
+
+	// 设置默认host
+	err := s.getFreeHost()
+	if err != nil {
+		return nil, err
+	}
+
+	// 设置http server
+	s.setHttpServer()
+
+	return s, nil
 }
 
-// Run 运行Server
-func (s *Server) Run() {
+func (s *Server) setHttpServer() {
 	if !s.isDebug {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	s.getFreeHost()
 	r := gin.New()
 	r.Use(Cors())
 	r.Use(gin.Recovery())
-
-	srv := &http.Server{
-		Addr:    s.host,
-		Handler: r,
-	}
 
 	authRoute := r.Group("", s.authMiddleware)
 	// 注册路由
@@ -119,6 +134,24 @@ func (s *Server) Run() {
 
 	for _, route := range s.routes {
 		route.Routes(routeContext)
+	}
+
+	s.g = r
+}
+
+func (s *Server) GIN() *gin.Engine {
+	return s.g
+}
+
+func (s *Server) Host() string {
+	return s.host
+}
+
+// Run 运行Server
+func (s *Server) Run() {
+	srv := &http.Server{
+		Addr:    s.host,
+		Handler: s.g,
 	}
 
 	go func() {

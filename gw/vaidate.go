@@ -1,4 +1,4 @@
-package web
+package gw
 
 import (
 	"encoding/json"

@@ -1,19 +1,28 @@
 package main
 
 import (
-	"github.com/gocrud/kit/web"
+	"github.com/gocrud/kit/gw"
+	"github.com/sirupsen/logrus"
+	"go-micro.dev/v4/web"
 )
 
 func main() {
-	routes := web.WithRoutes(Greeter{})
-	server := web.NewServer(routes)
-	server.Run()
+	routes := gw.WithRoutes(Greeter{})
+	server, _ := gw.NewServer(routes, gw.WithServerHost(":8080"))
+
+	srv := web.NewService(
+		web.Handler(server.GIN()),
+		web.Address(server.Host()),
+	)
+
+	srv.Run()
 }
 
 type Greeter struct {
+	log *logrus.Logger
 }
 
-func (g Greeter) Routes(ctx *web.RouteContext) {
+func (g Greeter) Routes(ctx *gw.RouteContext) {
 	ctx.Std.POST("/hello", ctx.Handle(g.SayHello))
 }
 
@@ -22,11 +31,10 @@ type helloReq struct {
 }
 
 // SayHello say hello handler
-func (g Greeter) SayHello(ctx *web.Context) {
+func (g Greeter) SayHello(ctx *gw.Context) any {
 	var req helloReq
 	if err := ctx.Bind(&req); err != nil {
-		ctx.Bad(err)
-		return
+		return ctx.BadError(err)
 	}
-	ctx.Data(req)
+	return ctx.BizData(req)
 }

@@ -48,8 +48,3 @@ func handleErr(err error, data any) error {
 	}
 	return nil
 }
-
-func (c *Context) Bind(bind bindFunc, data any) error {
-	err := bind(data)
-	return handleErr(err, data)
-}

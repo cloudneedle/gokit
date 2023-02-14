@@ -5,21 +5,28 @@ import (
 )
 
 func main() {
-	r := web.NewRouter(web.WithRouterIsProd(true))
-	r.Routes(TestHandler{})
-	r.Run()
+	routes := web.WithRoutes(Greeter{})
+	server := web.NewServer(routes)
+	server.Run()
 }
 
-type TestHandler struct {
+type Greeter struct {
 }
 
-func (t TestHandler) Routes(ctx *web.RouteContext) {
-	ctx.Std.POST("/test", web.Handle(t.Post))
+func (g Greeter) Routes(ctx *web.RouteContext) {
+	ctx.Std.POST("/hello", ctx.Handle(g.SayHello))
 }
 
-func (TestHandler) Post(c *web.Context) web.Resp {
-	//return c.BizBad(errorx.Code(UserNameErr))
-	//return c.BizData("sss")
-	//return c.Data("sss")
-	return c.UnAuth()
+type helloReq struct {
+	Name string `json:"name" binding:"required" msg:"name is required"`
+}
+
+// SayHello say hello handler
+func (g Greeter) SayHello(ctx *web.Context) {
+	var req helloReq
+	if err := ctx.Bind(&req); err != nil {
+		ctx.Bad(err)
+		return
+	}
+	ctx.Data(req)
 }

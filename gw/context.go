@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gocrud/kit/errorx"
+	"github.com/golang/protobuf/jsonpb"
+	"github.com/golang/protobuf/proto"
 )
 
 type Context struct {
@@ -46,6 +48,11 @@ func (c *Context) Get(key string) (value any, exists bool) {
 func (c *Context) Bind(v any) error {
 	err := c.g.ShouldBind(v)
 	return handleErr(err, v)
+}
+
+// BindJsonpb 绑定数据到protobuf struct
+func (c *Context) BindJsonpb(v proto.Message) error {
+	return jsonpb.Unmarshal(c.g.Request.Body, v)
 }
 
 type ICustomResp interface {

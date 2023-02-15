@@ -22,23 +22,28 @@ func (c *Context) Set(key string, value any) {
 }
 
 func (c *Context) BindJson(v any) error {
-	return c.g.BindJSON(v)
+	err := c.g.BindJSON(v)
+	return handleErr(err, v)
 }
 
 func (c *Context) BindQuery(v any) error {
-	return c.g.BindQuery(v)
+	err := c.g.BindQuery(v)
+	return handleErr(err, v)
 }
 
 func (c *Context) BindForm(v any) error {
-	return c.g.Bind(v)
+	err := c.g.Bind(v)
+	return handleErr(err, v)
 }
 
 func (c *Context) BindHeader(v any) error {
-	return c.g.BindHeader(v)
+	err := c.g.BindHeader(v)
+	return handleErr(err, v)
 }
 
 func (c *Context) BindUri(v any) error {
-	return c.g.BindUri(v)
+	err := c.g.BindUri(v)
+	return handleErr(err, v)
 }
 
 func (c *Context) Get(key string) (value any, exists bool) {

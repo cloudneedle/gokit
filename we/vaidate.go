@@ -1,4 +1,4 @@
-package gw
+package we
 
 import (
 	"encoding/json"

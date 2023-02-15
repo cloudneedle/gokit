@@ -21,6 +21,16 @@ func (c *Context) Set(key string, value any) {
 	c.g.Set(key, value)
 }
 
+// SetHeader set header
+func (c *Context) SetHeader(key string, value string) {
+	c.g.Header(key, value)
+}
+
+// GetHeader get header
+func (c *Context) GetHeader(key string) string {
+	return c.g.GetHeader(key)
+}
+
 func (c *Context) BindJson(v any) error {
 	err := c.g.BindJSON(v)
 	return handleErr(err, v)
@@ -207,5 +217,42 @@ func (c *Context) BadCode(err errorx.ErrorCode) ICustomResp {
 		status: 400,
 		Code:   err.Int(),
 		Msg:    fmt.Sprintf("%v", err),
+	}
+}
+
+// UnAuth 未授权
+//
+// http status: 401
+//
+// example:
+//
+//	{
+//	  "code": 401,
+//	  "msg": "未授权"
+//	}
+
+func (c *Context) UnAuth() ICustomResp {
+	return &biz{
+		status: 401,
+		Code:   401,
+		Msg:    "未授权",
+	}
+}
+
+// Forbidden 禁止访问
+//
+// http status: 403
+//
+// example:
+//
+//	{
+//	  "code": 403,
+//	  "msg": "禁止访问"
+//	}
+func (c *Context) Forbidden() ICustomResp {
+	return &biz{
+		status: 403,
+		Code:   403,
+		Msg:    "禁止访问",
 	}
 }

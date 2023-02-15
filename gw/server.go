@@ -2,8 +2,10 @@ package gw
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gocrud/kit/errorx"
 	"log"
 	"net"
 	"net/http"
@@ -45,7 +47,19 @@ func (r *RouteContext) Handle(fn func(ctx *Context) any) gin.HandlerFunc {
 		}
 		// 判断是否是错误
 		if err, ok := res.(error); ok {
-			c.JSON(http.StatusInternalServerError, err.Error())
+			// 判断是否是自定义错误
+			var customErr *errorx.Error
+			if ok := errors.As(err, &customErr); ok {
+				c.JSON(400, gin.H{
+					"code": customErr.Code(),
+					"msg":  customErr.Error(),
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code": 500,
+				"msg":  err.Error(),
+			})
 			return
 		}
 		c.JSON(http.StatusOK, res)

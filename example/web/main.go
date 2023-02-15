@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/gocrud/kit/errorx"
 	"github.com/gocrud/kit/gw"
-	"github.com/sirupsen/logrus"
+	"github.com/gocrud/kit/log"
+	"github.com/pkg/errors"
 	"go-micro.dev/v4/web"
 )
 
@@ -19,7 +21,7 @@ func main() {
 }
 
 type Greeter struct {
-	log *logrus.Logger
+	log *log.Logger
 }
 
 func (g Greeter) Routes(ctx *gw.RouteContext) {
@@ -32,9 +34,9 @@ type helloReq struct {
 
 // SayHello say hello handler
 func (g Greeter) SayHello(ctx *gw.Context) any {
-	var req helloReq
-	if err := ctx.Bind(&req); err != nil {
-		return ctx.BadError(err)
-	}
-	return ctx.BizData(req)
+	return errors.WithStack(errorx.Code(UserNameErr))
+	//if err := ctx.Bind(&req); err != nil {
+	//	return ctx.BadError(err)
+	//}
+	//return ctx.BizData(req)
 }

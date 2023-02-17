@@ -3,18 +3,18 @@ package main
 import (
 	"github.com/gocrud/kit/errorx"
 	"github.com/gocrud/kit/log"
-	"github.com/gocrud/kit/we"
+	"github.com/gocrud/kit/web"
 	"github.com/pkg/errors"
-	"go-micro.dev/v4/web"
+	webx "go-micro.dev/v4/web"
 )
 
 func main() {
-	routes := we.WithRoutes(Greeter{})
-	server, _ := we.NewServer(routes, we.WithServerHost(":8080"))
+	routes := web.WithRoutes(Greeter{})
+	server, _ := web.NewServer(routes, web.WithServerHost(":8080"))
 
-	srv := web.NewService(
-		web.Handler(server.GIN()),
-		web.Address(server.Host()),
+	srv := webx.NewService(
+		webx.Handler(server.GIN()),
+		webx.Address(server.Host()),
 	)
 
 	srv.Run()
@@ -24,7 +24,7 @@ type Greeter struct {
 	log *log.Logger
 }
 
-func (g Greeter) Routes(ctx *we.RouteContext) {
+func (g Greeter) Routes(ctx *web.RouteContext) {
 	ctx.Std.POST("/hello", ctx.Handle(g.SayHello))
 }
 
@@ -33,7 +33,7 @@ type helloReq struct {
 }
 
 // SayHello say hello handler
-func (g Greeter) SayHello(ctx *we.Context) any {
+func (g Greeter) SayHello(ctx *web.Context) any {
 	return errors.WithStack(errorx.Code(UserNameErr))
 	//if err := ctx.Bind(&req); err != nil {
 	//	return ctx.BadError(err)

@@ -16,7 +16,6 @@ func main() {
 		webx.Handler(server.GIN()),
 		webx.Address(server.Host()),
 	)
-
 	srv.Run()
 }
 

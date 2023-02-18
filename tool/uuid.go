@@ -1,7 +1,7 @@
-package uuidx
+package tool
 
 import "github.com/google/uuid"
 
-func UUID() string {
+func GetUUID() string {
 	return uuid.NewString()
 }

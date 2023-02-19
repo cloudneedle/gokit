@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-type bindFunc func(obj any) error
-
 func handleErr(err error, data any) error {
 	if err == io.EOF {
 		return errors.New("请求参数格式错误")

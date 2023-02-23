@@ -12,6 +12,8 @@ type Options struct {
 	DB       int
 }
 
+const Nil = redis.Nil
+
 func NewClient(options Options) *Client {
 	return &Client{redis.NewClient(&redis.Options{
 		Addr:     options.Addr,

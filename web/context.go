@@ -21,13 +21,23 @@ func (c *Context) Set(key string, value any) {
 	c.g.Set(key, value)
 }
 
-// SetHeader set header
-func (c *Context) SetHeader(key string, value string) {
+// SetReqHeader set header
+func (c *Context) SetReqHeader(key string, value string) {
+	c.g.Request.Header.Set(key, value)
+}
+
+// GetReqHeader get header
+func (c *Context) GetReqHeader(key string) string {
+	return c.g.Request.Header.Get(key)
+}
+
+// SetRespHeader set header
+func (c *Context) SetRespHeader(key string, value string) {
 	c.g.Header(key, value)
 }
 
-// GetHeader get header
-func (c *Context) GetHeader(key string) string {
+// GetRespHeader get header
+func (c *Context) GetRespHeader(key string) string {
 	return c.g.GetHeader(key)
 }
 
@@ -91,6 +101,19 @@ func (b *biz) GetData() any {
 	return b
 }
 
+type std struct {
+	status int `json:"-"`
+	data   any `json:"data,omitempty"`
+}
+
+func (s *std) Status() int {
+	return s.status
+}
+
+func (s *std) GetData() any {
+	return s.data
+}
+
 // BizData 业务数据
 //
 // http status: 200
@@ -108,6 +131,29 @@ func (b *biz) GetData() any {
 func (c *Context) BizData(data any) ICustomResp {
 	return &biz{
 		status: 200,
+		Data:   data,
+	}
+}
+
+// Biz 业务数据,可以指定code和msg
+//
+// http status: 200
+//
+// example:
+//
+//	{
+//	  "code": 0,
+//	  "msg": "success",
+//	  "data": {
+//	    "id": 1,
+//	    "name": "张三"
+//	  }
+//	}
+func (c *Context) Biz(code int, msg string, data any) ICustomResp {
+	return &biz{
+		status: 200,
+		Code:   code,
+		Msg:    msg,
 		Data:   data,
 	}
 }
@@ -166,7 +212,24 @@ func (c *Context) BizBadError(err error) ICustomResp {
 	}
 }
 
-// Bad 业务错误,可以指定code和msg
+// Data http状态码为200的数据返回
+//
+// http status: 200
+//
+// example:
+//
+//	{
+//	  "id": 1,
+//	  "name": "张三"
+//	}
+func (c *Context) Data(data any) ICustomResp {
+	return &std{
+		status: 200,
+		data:   data,
+	}
+}
+
+// Bad http状态码为400的错误返回，可以指定code和msg
 //
 // http status: 400
 //
@@ -184,7 +247,7 @@ func (c *Context) Bad(code int, msg string) ICustomResp {
 	}
 }
 
-// BadError 业务错误，code=400
+// BadError http状态码为400的错误返回，code=400
 //
 // http status: 400
 //
@@ -202,7 +265,7 @@ func (c *Context) BadError(err error) ICustomResp {
 	}
 }
 
-// BadCode 业务错误，自定义错误码
+// BadCode http状态码为400的错误返回，自定义code
 //
 // http status: 400
 //

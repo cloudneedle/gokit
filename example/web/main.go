@@ -10,7 +10,7 @@ import (
 
 func main() {
 	routes := web.WithRoutes(Greeter{})
-	server, _ := web.NewServer(routes, web.WithServerHost(":8080"))
+	server, _ := web.NewServer(routes)
 
 	srv := webx.NewService(
 		webx.Handler(server.GIN()),
@@ -24,7 +24,7 @@ type Greeter struct {
 }
 
 func (g Greeter) Routes(ctx *web.RouteContext) {
-	ctx.Std.POST("/hello", ctx.Handle(g.SayHello))
+	ctx.POST("/hello", ctx.Handle(g.SayHello))
 }
 
 type helloReq struct {

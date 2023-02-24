@@ -32,8 +32,8 @@ func Cors() gin.HandlerFunc {
 }
 
 type RouteContext struct {
-	Std  gin.IRoutes
-	Safe gin.IRoutes
+	gin.IRoutes
+	Auth gin.IRoutes
 }
 
 func (r *RouteContext) Handle(fn func(ctx *Context) any) gin.HandlerFunc {
@@ -81,13 +81,6 @@ type Server struct {
 // ServerOption Server Option type
 type ServerOption func(*Server)
 
-// WithServerIsDebug 设置debug模式
-func WithServerIsDebug(isDebug bool) ServerOption {
-	return func(s *Server) {
-		s.isDebug = isDebug
-	}
-}
-
 // WithServerHost 设置host
 func WithServerHost(host string) ServerOption {
 	return func(s *Server) {
@@ -114,6 +107,7 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	s := &Server{
 		isDebug: true,
 	}
+
 	for _, opt := range opts {
 		opt(s)
 	}
@@ -142,8 +136,8 @@ func (s *Server) setHttpServer() {
 	authRoute := r.Group("", s.authMiddleware)
 	// 注册路由
 	routeContext := &RouteContext{
-		Std:  r,
-		Safe: authRoute,
+		IRoutes: r,
+		Auth:    authRoute,
 	}
 
 	for _, route := range s.routes {
@@ -190,24 +184,18 @@ func (s *Server) Run() {
 	log.Println("Server exiting")
 }
 
-// getFreeHost 获取一个空闲的host,如果未指定host，开发模式下动态获取有效服务端host,生产模式下使用默认端口80
+// getFreeHost 获取一个空闲的host,如果未指定host，动态获取有效服务端host
 func (s *Server) getFreeHost() error {
 	if s.host != "" {
 		return nil
 	}
 
-	// 判读是否debug模式
-	if s.isDebug {
-		ln, err := net.Listen("tcp", ":0")
-		if err != nil {
-			return err
-		}
-		defer ln.Close()
-		port := ln.Addr().(*net.TCPAddr).Port
-		s.host = fmt.Sprintf(":%d", port)
-		return nil
+	ln, err := net.Listen("tcp", ":0")
+	if err != nil {
+		return err
 	}
-
-	s.host = ":80"
+	defer ln.Close()
+	port := ln.Addr().(*net.TCPAddr).Port
+	s.host = fmt.Sprintf(":%d", port)
 	return nil
 }

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/gocrud/kit/errorx"
-	"github.com/gocrud/kit/log"
-	"github.com/gocrud/kit/web"
+	"github.com/cloudneedle/gokit/errorx"
+	"github.com/cloudneedle/gokit/log"
+	"github.com/cloudneedle/gokit/web"
 	"github.com/pkg/errors"
 	webx "go-micro.dev/v4/web"
 )

@@ -1,4 +1,4 @@
-module github.com/gocrud/kit
+module github.com/cloudneedle/gokit
 
 go 1.19
 

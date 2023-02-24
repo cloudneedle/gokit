@@ -3,8 +3,8 @@ package web
 import (
 	"context"
 	"fmt"
+	"github.com/cloudneedle/gokit/errorx"
 	"github.com/gin-gonic/gin"
-	"github.com/gocrud/kit/errorx"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 )

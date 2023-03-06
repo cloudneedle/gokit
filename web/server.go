@@ -32,7 +32,7 @@ func Cors() gin.HandlerFunc {
 }
 
 type RouteContext struct {
-	gin.IRoutes
+	*gin.Engine
 	Auth gin.IRoutes
 }
 
@@ -136,8 +136,8 @@ func (s *Server) setHttpServer() {
 	authRoute := r.Group("", s.authMiddleware)
 	// 注册路由
 	routeContext := &RouteContext{
-		IRoutes: r,
-		Auth:    authRoute,
+		Engine: r,
+		Auth:   authRoute,
 	}
 
 	for _, route := range s.routes {
@@ -199,3 +199,8 @@ func (s *Server) getFreeHost() error {
 	s.host = fmt.Sprintf(":%d", port)
 	return nil
 }
+
+//
+//func NewFromConfig(t config.Type,configKey string,opts ...ServerOption) *Server {
+//
+//}

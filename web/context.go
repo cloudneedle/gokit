@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 type Context struct {
@@ -205,10 +206,11 @@ func (c *Context) BizBad(code int, msg string) ICustomResp {
 //	  "msg": "用户名或密码错误"
 //	}
 func (c *Context) BizBadError(err error) ICustomResp {
+	rawErr := errors.Cause(err)
 	return &biz{
 		status: 200,
 		Code:   400,
-		Msg:    fmt.Sprintf("%v", err),
+		Msg:    fmt.Sprintf("%v", rawErr),
 	}
 }
 
@@ -258,10 +260,11 @@ func (c *Context) Bad(code int, msg string) ICustomResp {
 //	  "msg": "用户名或密码错误"
 //	}
 func (c *Context) BadError(err error) ICustomResp {
+	rawErr := errors.Cause(err)
 	return &biz{
 		status: 400,
 		Code:   400,
-		Msg:    fmt.Sprintf("%v", err),
+		Msg:    fmt.Sprintf("%v", rawErr),
 	}
 }
 

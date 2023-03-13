@@ -1,13 +1,10 @@
 package main
 
 import (
-	"github.com/cloudneedle/gokit/config"
-	"github.com/cloudneedle/gokit/errorx"
+	"errors"
 	"github.com/cloudneedle/gokit/log"
 	"github.com/cloudneedle/gokit/web"
-	"github.com/pkg/errors"
 	"go-micro.dev/v4/logger"
-	webx "go-micro.dev/v4/web"
 )
 
 func newWebServer(host string) *web.Server {
@@ -22,62 +19,11 @@ func newWebServer(host string) *web.Server {
 }
 
 func main() {
-	cfgClient, err := config.New(config.WithPath("127.0.0.1:2379"))
+	srv, err := web.NewServer(web.WithServerHost(":80"), web.WithRoutes(Greeter{}))
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
-	// 读取配置
-	cfg, err := cfgClient.Etcd.GetPrefix("admin")
-	if err != nil {
-		panic(err)
-	}
-	//判断配置是否为空
-	if len(cfg) == 0 {
-		panic("配置不能为空")
-	}
-
-	var serverHost string
-	var logPath string
-	// 读取配置
-	for k, v := range cfg {
-		switch k {
-		case "admin/server_host":
-			serverHost = v
-		case "admin/log_path":
-			logPath = v
-		}
-	}
-	logger := log.New(log.WithLogPath(logPath))
-	server := newWebServer(serverHost)
-	srv := webx.NewService(
-		webx.Handler(server.GIN()),
-		webx.Address(server.Host()),
-	)
-	go func() {
-		cfgClient.Etcd.WatchPrefix("admin", func(m map[string]string) {
-			srv.Stop()
-			for k, v := range m {
-				switch k {
-				case "server_host":
-					serverHost = v
-				case "log_path":
-					logPath = v
-				}
-			}
-			s := newWebServer(serverHost)
-			srv := webx.NewService(
-				webx.Handler(s.GIN()),
-				webx.Address(s.Host()),
-			)
-			srv.Run()
-		})
-	}()
-	go func() {
-		if err := srv.Run(); err != nil {
-			logger.Fatal(err)
-		}
-	}()
-	select {}
+	srv.Run()
 }
 
 type Greeter struct {
@@ -98,10 +44,10 @@ func (g Greeter) SayHello(ctx *web.Context) any {
 	//	return ctx.BadError(err)
 	//}
 	//return ctx.BizData(req)
-	return testErrorsWithMessage()
+	return ctx.BadError(testErrorsWithMessage())
 }
 
 func testErrorsWithMessage() error {
-	err := errors.WithMessage(errorx.Code(UserNameErr), "test")
+	err := errors.New("test error")
 	return err
 }
